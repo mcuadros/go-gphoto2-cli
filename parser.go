@@ -3,6 +3,7 @@ package gphoto2cli
 import (
 	"fmt"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -62,7 +63,9 @@ func (p *parser) extractList(text, key string) []string {
 
 func (p *parser) ParseGetConfig(output string) *ConfigValue {
 	lines := strings.Split(output, "\n")
-	v := &ConfigValue{}
+	v := &ConfigValue{
+		Choices: make(map[int]string),
+	}
 
 	for _, line := range lines {
 		parts := strings.SplitN(line, ": ", 2)
@@ -82,7 +85,13 @@ func (p *parser) ParseGetConfig(output string) *ConfigValue {
 			v.Current = value
 		case "Choice":
 			if v.Type == "RADIO" {
-				v.Choices = strings.Split(value, " ")
+				choiceParts := strings.SplitN(value, " ", 2)
+				if len(choiceParts) == 2 {
+					index := choiceParts[0]
+					choice := choiceParts[1]
+					i, _ := strconv.Atoi(index)
+					v.Choices[i] = choice
+				}
 			}
 		}
 	}

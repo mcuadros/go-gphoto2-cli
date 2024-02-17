@@ -41,11 +41,12 @@ func TestParseGetConfigText(t *testing.T) {
 	assert.Equal(t, "2c90dfcfb648160375c8af85dc53d343", value.Current)
 }
 
-var getConfigRadioFixture = `Label: Picture Style
+var getConfigRadioFixture = `Label: Capture Target
 Readonly: 0
 Type: RADIO
-Current: Auto
-Choice: 0 Auto
+Current: Memory card
+Choice: 0 Internal RAM
+Choice: 1 Memory card
 END`
 
 func TestParseGetConfigRadio(t *testing.T) {
@@ -53,10 +54,13 @@ func TestParseGetConfigRadio(t *testing.T) {
 	value := p.ParseGetConfig(getConfigRadioFixture)
 
 	assert.False(t, value.Readonly)
-	assert.Equal(t, "Picture Style", value.Label)
+	assert.Equal(t, "Capture Target", value.Label)
 	assert.Equal(t, "RADIO", value.Type)
-	assert.Equal(t, "Auto", value.Current)
-	assert.Equal(t, []string{"0", "Auto"}, value.Choices)
+	assert.Equal(t, "Memory card", value.Current)
+	require.Len(t, value.Choices, 2)
+
+	assert.Equal(t, "Internal RAM", value.Choices[0])
+	assert.Equal(t, "Memory card", value.Choices[1])
 }
 
 var cameraSummaryFixture = `Camera summary:
