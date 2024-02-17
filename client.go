@@ -49,7 +49,7 @@ func (c *Client) ListConfig(ctx context.Context, p *Port) ([]string, error) {
 	return strings.Split(output, "\n"), nil
 }
 
-func (c *Client) GetCamera(ctx context.Context, serial string) (*Camera, error) {
+func (c *Client) Camera(ctx context.Context, serial string) (*Camera, error) {
 	ports, err := c.ListPorts(ctx)
 	if err != nil {
 		return nil, err
@@ -87,13 +87,21 @@ func (c *Client) runCommand(ctx context.Context, p *Port, flags ...string) (stri
 	}
 
 	cmd := exec.CommandContext(ctx, c.getBinary(), flags...)
-
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
 
 	if err := cmd.Run(); err != nil {
-		return "", c.ParseErrorMessage(errb.String())
+		fmt.Println(errb.String())
+		if err := c.ParseErrorMessage(errb.String()); err != nil {
+			return "", err
+		}
+
+		return "", err
+	}
+
+	if err := c.ParseErrorMessage(errb.String()); err != nil {
+		return "", err
 	}
 
 	return outb.String(), nil

@@ -8,7 +8,7 @@ import (
 
 var (
 	autoDetechRegExp = regexp.MustCompile("([a-zA-Z0-9_ ]+)(usb:(\\d+),(\\d+))")
-	errorMsgRegExp   = regexp.MustCompile(`\*\*\* Error \*\*\* *\n(.+)\n\*\*\* Error \(([-0-9]+): '([^']+)'\) \*\*\*`)
+	errorMsgRegExp   = regexp.MustCompile(`\*\*\* Error \*\*\* *\n(.+)\n+\*\*\* Error( \(([-0-9 ]+): '([^']+)'\))* \*\*\*`)
 )
 
 type parser struct{}
@@ -92,13 +92,34 @@ func (p *parser) ParseGetConfig(output string) *ConfigValue {
 
 func (p *parser) ParseErrorMessage(input string) error {
 	matches := errorMsgRegExp.FindStringSubmatch(input)
-	if len(matches) != 4 {
-		return fmt.Errorf("invalid error message format: %q", input)
+	if len(matches) != 5 {
+		return nil
 	}
 
 	errorMessage := matches[1]
-	errorCode := matches[2]
-	errorKind := matches[3]
+	errorCode := matches[3]
+	errorKind := matches[4]
+
+	if errorCode == "" && errorKind == "" {
+		return fmt.Errorf(errorMessage)
+	}
 
 	return fmt.Errorf("%s (%s): %s", errorKind, errorCode, errorMessage)
+}
+
+func (p *parser) ParseCapture(input string) *CaptureResult {
+	lines := strings.Split(input, "\n")
+	r := &CaptureResult{}
+	for _, line := range lines {
+		switch {
+		case strings.HasPrefix(line, "New file is in location"):
+			r.OnCamera = strings.TrimSpace(strings.TrimPrefix(line, "New file is in location"))
+		case strings.HasPrefix(line, "Saving file as"):
+			r.LocalFile = strings.TrimSpace(strings.TrimPrefix(line, "Saving file as"))
+		case strings.HasPrefix(line, "Deleting file"):
+			r.Deleted = true
+		}
+	}
+
+	return r
 }

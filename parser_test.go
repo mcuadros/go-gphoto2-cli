@@ -117,3 +117,20 @@ func TestParseErrorMessage(t *testing.T) {
 	err := p.ParseErrorMessage(fixtureErrorMessage)
 	assert.Equal(t, err.Error(), "Unspecified error (-1): serialnumberd not found in configuration tree.")
 }
+
+var fixtureErrorCaptureMessage = `
+
+*** Error ***
+Canon EOS Capture failed to release: Perhaps no focus?
+
+*** Error ***
+Canon EOS Capture failed to release: Perhaps no focus?
+ERROR: Could not capture image.
+ERROR: Could not capture.
+`
+
+func TestParseErrorMessageCapture(t *testing.T) {
+	p := &parser{}
+	err := p.ParseErrorMessage(fixtureErrorCaptureMessage)
+	assert.Equal(t, err.Error(), "Canon EOS Capture failed to release: Perhaps no focus?")
+}
