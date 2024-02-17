@@ -43,10 +43,10 @@ func (c *Camera) CapturePhoto(ctx context.Context, filename string, flags ...str
 
 func (c *Camera) CaptureVideo(ctx context.Context, filename string, d time.Duration, flags ...string) (*CaptureResult, error) {
 	flags = append(flags, "--set-config=viewfinder=1")
-	flags = append(flags, "--set-config=capturetarget='Memory card'")
-	flags = append(flags, "--set-config=movierecordtarget=Card")
+	flags = append(flags, "--set-config=capturetarget=1")
+	flags = append(flags, "--set-config=movierecordtarget=0")
 	flags = append(flags, "--wait-event", fmt.Sprintf("%ds", int(d.Seconds())))
-	flags = append(flags, "--set-config=movierecordtarget=None")
+	flags = append(flags, "--set-config=movierecordtarget=1")
 	flags = append(flags, "--wait-event-and-download", "2s")
 	flags = append(flags, "--set-config=viewfinder=0")
 	flags = append(flags, "--force-overwrite")
@@ -60,6 +60,5 @@ func (c *Camera) CaptureVideo(ctx context.Context, filename string, d time.Durat
 		return nil, fmt.Errorf("error capturing at port %s: %w", c.p.Port, err)
 	}
 
-	fmt.Println(output)
 	return c.cli.parser.ParseCapture(output), nil
 }

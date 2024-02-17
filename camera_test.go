@@ -61,7 +61,7 @@ func TestCameraCaptureVideo(t *testing.T) {
 
 	r, err := camera.CaptureVideo(context.Background(), filename, time.Second*5)
 	require.NoError(t, err)
-	require.Equal(t, r.Deleted, true)
-	require.True(t, len(r.OnCamera) != 0)
+	require.Equal(t, r.Deleted, false)
+	require.True(t, len(r.OnCamera) == 0)
 	require.True(t, len(r.LocalFile) != 0)
 }

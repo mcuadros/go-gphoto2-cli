@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"os/exec"
 	"strings"
-	"sync"
 )
 
 const (
@@ -14,7 +13,6 @@ const (
 )
 
 type Client struct {
-	sync.Mutex
 	parser
 }
 
@@ -59,10 +57,6 @@ func (c *Client) Camera(ctx context.Context, serial string) (*Camera, error) {
 		return nil, fmt.Errorf("no cameras available")
 	}
 
-	if serial == "" {
-		return NewCamera(c, ports[0]), nil
-	}
-
 	for _, p := range ports {
 		v, err := c.GetConfig(ctx, p, SerialNumberConfig)
 		if err != nil {
@@ -83,6 +77,9 @@ func (c *Client) getBinary() string {
 
 func (c *Client) runCommand(ctx context.Context, p *Port, flags ...string) (string, error) {
 	if p != nil {
+		p.Lock()
+		defer p.Unlock()
+
 		flags = append(flags, fmt.Sprintf("--port=%s", p.Port))
 	}
 
@@ -92,7 +89,6 @@ func (c *Client) runCommand(ctx context.Context, p *Port, flags ...string) (stri
 	cmd.Stderr = &errb
 
 	if err := cmd.Run(); err != nil {
-		fmt.Println(errb.String())
 		if err := c.ParseErrorMessage(errb.String()); err != nil {
 			return "", err
 		}

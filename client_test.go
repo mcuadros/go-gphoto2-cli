@@ -16,7 +16,7 @@ func TestClientListPorts(t *testing.T) {
 
 func TestClientGetConfig(t *testing.T) {
 	c := NewClient()
-	v, err := c.GetConfig(context.Background(), nil, SerialNumber)
+	v, err := c.GetConfig(context.Background(), nil, "serialnumber")
 	require.NoError(t, err)
 	require.Equal(t, v.Label, "Serial Number")
 }
@@ -30,13 +30,6 @@ func TestClientListConfig(t *testing.T) {
 }
 
 func TestClientCamera(t *testing.T) {
-	c := NewClient()
-	camera, err := c.Camera(context.Background(), "")
-	require.NoError(t, err)
-	require.NotNil(t, camera)
-}
-
-func TestClientCameraWithSerial(t *testing.T) {
 	if SerialNumber == "" {
 		t.Skip("SERIAL_NUMBER needs to be provided")
 	}
