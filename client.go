@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -84,6 +85,10 @@ func (c *Client) runCommand(ctx context.Context, p *Port, flags ...string) (stri
 	}
 
 	cmd := exec.CommandContext(ctx, c.getBinary(), flags...)
+	if os.Getenv("GPHOTO_DEBUG") != "" {
+		fmt.Println(cmd)
+	}
+
 	var outb, errb bytes.Buffer
 	cmd.Stdout = &outb
 	cmd.Stderr = &errb
